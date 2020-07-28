@@ -1,0 +1,44 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+
+	<title>URL Shortener</title>
+	<meta name="description" content="A simple URL shortener made in Go">
+	<meta name="author" content="joshturge">
+
+	<link rel='icon' href='favicon.ico' type='image/x-icon'/ >
+</head>
+<body>
+	<h1>URL to shorten</h1>
+	<input id="url" type="text">
+	<button onclick="submit()">Shorten</button>
+
+	<p id="shortened-url"></p>
+
+	<script>
+		const submit = () => {
+			let url = document.getElementById("url").value;
+			let exp = /(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})/gi;
+        	let regex = new RegExp(exp); 
+
+			if (!url.match(regex)) {
+				alert("Invalid URL");
+				return;
+			}
+
+			fetch("/shorten", {
+				headers: {
+					"Content-Type": "application/json"
+				},
+				method: "POST",
+				body: JSON.stringify({url: url})
+			}).then(res => res.json())
+				.then(data => {
+					let shortUrl = `${location.protocol}//${location.host}/${data.hash}`
+					document.getElementById("shortened-url").innerHTML = `<a href="${shortUrl}">${shortUrl}</a>`;
+				})
+        }
+    </script> 
+</body> 
+</html> 
