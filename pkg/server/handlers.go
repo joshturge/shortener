@@ -1,12 +1,11 @@
 package server
 
 import (
-	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"net/http"
 
-	"github.com/cespare/xxhash"
+	"github.com/joshturge/url-short/pkg/hash"
 	"github.com/joshturge/url-short/pkg/model"
 	"github.com/joshturge/url-short/pkg/repo"
 )
@@ -48,18 +47,14 @@ func Shorten(rep repo.Repository) http.HandlerFunc {
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
-
 		// end checking
 
-		xh := xxhash.New()
-		if n, err := xh.Write([]byte(user.URL)); n == 0 || err != nil {
-			fmt.Printf("ERROR: unable to write bytes to hash: wrote %d: %s", n, err.Error())
+		hash, err := hash.Hash(user.URL)
+		if err != nil {
+			fmt.Printf("ERROR: %s\n", err.Error())
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
-
-		// TODO(joshturge): make a custom encoder instead of just cutting the hash bytes in half
-		hash := hex.EncodeToString(xh.Sum(nil)[0:4])
 
 		if err := rep.Set(r.Context(), hash, user.URL); err != nil {
 			fmt.Printf("ERROR: %s\n", err.Error())
