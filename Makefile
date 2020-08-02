@@ -1,5 +1,5 @@
 BUILD_DIR=bin/
-EXENAME=urlshort
+EXENAME=shortener
 
 GO=$(shell which go)
 
