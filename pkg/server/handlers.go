@@ -4,11 +4,17 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 
-	"github.com/joshturge/url-short/pkg/hash"
 	"github.com/joshturge/url-short/pkg/model"
 	"github.com/joshturge/url-short/pkg/repo"
+	"github.com/joshturge/url-short/pkg/urlhash"
 )
+
+func isUrl(str string) bool {
+	u, err := url.Parse(str)
+	return err == nil && u.Scheme != "" && u.Host != ""
+}
 
 // Shorten a url by hashing it and writing it to a repository
 func Shorten(rep repo.Repository) http.HandlerFunc {
@@ -42,14 +48,13 @@ func Shorten(rep repo.Repository) http.HandlerFunc {
 			return
 		}
 
-		// TODO(joshurge): double check the url is an actual url with some regex
-		if user.URL == "" {
+		if !isUrl(user.URL) {
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
 		// end checking
 
-		hash, err := hash.Hash(user.URL)
+		hash, err := urlhash.Hash(user.URL)
 		if err != nil {
 			fmt.Printf("ERROR: %s\n", err.Error())
 			w.WriteHeader(http.StatusInternalServerError)

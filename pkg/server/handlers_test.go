@@ -18,6 +18,15 @@ var hashTest = map[string]string{
 	"a9ecbd6c": "https://drive.google.com",
 }
 
+var rep repo.Repository
+
+func init() {
+	rep = repo.NewMap()
+	for hash, url := range hashTest {
+		rep.Set(context.Background(), hash, url)
+	}
+}
+
 func TestShorten(t *testing.T) {
 	for hash, data := range hashTest {
 		buf := bytes.Buffer{}
@@ -34,12 +43,12 @@ func TestShorten(t *testing.T) {
 		req.Header.Add("User-Agent", "some-browser")
 
 		w := httptest.NewRecorder()
-		handler := server.Shorten(repo.NewMap())
+		handler := server.Shorten(rep)
 
 		handler(w, req)
 
 		if w.Result().StatusCode != http.StatusOK {
-			t.Errorf("response was not 308 got: %s", w.Result().Status)
+			t.Errorf("response was not 200 got: %s", w.Result().Status)
 			t.FailNow()
 		}
 
@@ -54,24 +63,6 @@ func TestShorten(t *testing.T) {
 
 		if rHash.Hash != hash {
 			t.Errorf("hash does not match wanted: %s got: %s", hash, rHash.Hash)
-		}
-	}
-}
-
-func TestUrl(t *testing.T) {
-	for hash, _ := range hashTest {
-
-		req := httptest.NewRequest("GET", "http://localhost:8080/"+hash, nil)
-		w := httptest.NewRecorder()
-		handler := server.Url(repo.NewMap())
-
-		ctx := context.WithValue(req.Context(), "uri_params", []string{"/" + hash})
-		req = req.WithContext(ctx)
-
-		handler(w, req)
-		if w.Result().StatusCode != http.StatusPermanentRedirect {
-			t.Errorf("response was not 200 OK got: %s", w.Result().Status)
-			t.FailNow()
 		}
 	}
 }
