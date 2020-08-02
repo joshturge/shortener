@@ -3,7 +3,7 @@ package urlhash_test
 import (
 	"testing"
 
-	"github.com/joshturge/url-short/pkg/urlhash"
+	"github.com/joshturge/shortener/pkg/urlhash"
 )
 
 var testCase = map[string]string{

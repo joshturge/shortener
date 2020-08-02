@@ -7,7 +7,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/joshturge/url-short/pkg/repo"
+	"github.com/joshturge/shortener/pkg/repo"
 	"golang.org/x/sync/errgroup"
 )
 

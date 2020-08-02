@@ -1,4 +1,4 @@
-module github.com/joshturge/url-short
+module github.com/joshturge/shortener
 
 go 1.14
 

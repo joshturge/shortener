@@ -8,8 +8,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/joshturge/url-short/pkg/repo"
-	"github.com/joshturge/url-short/pkg/server"
+	"github.com/joshturge/shortener/pkg/repo"
+	"github.com/joshturge/shortener/pkg/server"
 )
 
 var hashTest = map[string]string{

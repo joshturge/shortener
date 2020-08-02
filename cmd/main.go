@@ -7,8 +7,8 @@ import (
 	"os/signal"
 	"time"
 
-	"github.com/joshturge/url-short/pkg/repo"
-	"github.com/joshturge/url-short/pkg/server"
+	"github.com/joshturge/shortener/pkg/repo"
+	"github.com/joshturge/shortener/pkg/server"
 )
 
 var (

@@ -6,9 +6,9 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/joshturge/url-short/pkg/model"
-	"github.com/joshturge/url-short/pkg/repo"
-	"github.com/joshturge/url-short/pkg/urlhash"
+	"github.com/joshturge/shortener/pkg/model"
+	"github.com/joshturge/shortener/pkg/repo"
+	"github.com/joshturge/shortener/pkg/urlhash"
 )
 
 func isUrl(str string) bool {
