@@ -1,14 +1,15 @@
 package server
 
 import (
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"hash/adler32"
 	"net/http"
 	"net/url"
 
 	"github.com/joshturge/shortener/pkg/model"
 	"github.com/joshturge/shortener/pkg/repo"
-	"github.com/joshturge/shortener/pkg/urlhash"
 )
 
 func isUrl(str string) bool {
@@ -54,12 +55,14 @@ func Shorten(rep repo.Repository) http.HandlerFunc {
 		}
 		// end checking
 
-		hash, err := urlhash.Hash(user.URL)
-		if err != nil {
-			fmt.Printf("ERROR: %s\n", err.Error())
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
+		// create the url hash
+		chksm := adler32.Checksum([]byte(user.URL))
+		hash := hex.EncodeToString([]byte{
+			byte(chksm >> 24),
+			byte(chksm >> 16),
+			byte(chksm >> 8),
+			byte(chksm),
+		})
 
 		if err := rep.Set(r.Context(), hash, user.URL); err != nil {
 			fmt.Printf("ERROR: %s\n", err.Error())

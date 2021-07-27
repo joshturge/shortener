@@ -13,9 +13,9 @@ import (
 )
 
 var hashTest = map[string]string{
-	"03e400d9": "https://joshturge.dev",
-	"cd919b1e": "https://google.com",
-	"a9ecbd6c": "https://drive.google.com",
+	"58b70814": "https://joshturge.dev",
+	"403e06b6": "https://google.com",
+	"706608fe": "https://drive.google.com",
 }
 
 var rep repo.Repository

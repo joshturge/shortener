@@ -45,9 +45,8 @@ may need to run the command below:
 go test -v ./pkg/...
 ```
 
-## Built With
+## Packaged Used 
 * [go-redis](https://github.com/go-redis/redis)
-* [xxhash](https://github.com/cespare/xxhash)
 
 ## License
 This project is licensed under the BSD License - see the [LICENSE](LICENSE)
