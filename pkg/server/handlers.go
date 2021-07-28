@@ -27,11 +27,6 @@ func Shorten(rep repo.Repository) http.HandlerFunc {
 			return
 		}
 
-		if len(r.UserAgent()) < 5 {
-			w.WriteHeader(http.StatusBadRequest)
-			return
-		}
-
 		if r.Header.Get("Content-Type") != "application/json" {
 			w.WriteHeader(http.StatusBadRequest)
 			return
