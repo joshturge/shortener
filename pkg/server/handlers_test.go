@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"time"
 	"testing"
 
 	"github.com/joshturge/shortener/pkg/repo"
@@ -21,7 +22,7 @@ var hashTest = map[string]string{
 var rep repo.Repository
 
 func init() {
-	rep = repo.NewMap()
+	rep = repo.NewMap(time.Duration(3) * time.Second)
 	for hash, url := range hashTest {
 		rep.Set(context.Background(), hash, url)
 	}

@@ -37,18 +37,15 @@ func main() {
 	var rep repo.Repository
 	if testRun {
 		fmt.Println("INFO: running in test mode")
-
-		rep = repo.NewMap()
-		rep.SetTimeout(time.Duration(timeout) * time.Minute)
+		rep = repo.NewMap(time.Duration(timeout) * time.Minute)
 	} else {
 		fmt.Printf("INFO: connecting to the redis instance %s\n", redisAddress)
 
-		rep, err = repo.NewRedisRepo(redisAddress, redisPassword)
+		rep, err = repo.NewRedisRepo(redisAddress, redisPassword, time.Duration(timeout) * time.Minute)
 		if err != nil {
 			fmt.Printf("ERROR: %s\n", err.Error())
 			os.Exit(1)
 		}
-		rep.SetTimeout(time.Duration(timeout) * time.Minute)
 	}
 
 	// start the server and wait for a interrupt signal

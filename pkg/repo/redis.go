@@ -11,12 +11,12 @@ import (
 // Redis is a key value store which satisfies the Repository interface
 type Redis struct {
 	rdb     *redis.Client
-	timeout time.Duration
+	Timeout time.Duration
 }
 
 // NewRedisRepo will create a new Repository given the address, password of the redis instance
-func NewRedisRepo(addr, pwd string) (Repository, error) {
-	repo := Redis{timeout: time.Duration(5 * time.Minute)}
+func NewRedisRepo(addr, pwd string, timeout time.Duration) (Repository, error) {
+	repo := Redis{Timeout: timeout}
 	repo.rdb = redis.NewClient(&redis.Options{
 		Addr:     addr,
 		Password: pwd,
@@ -31,15 +31,10 @@ func NewRedisRepo(addr, pwd string) (Repository, error) {
 	return &repo, nil
 }
 
-// SetTimeout will set the duration of keys within the keystore
-func (r Redis) SetTimeout(d time.Duration) {
-	r.timeout = d
-}
-
 // Set a key and value within the redis instance
 func (r *Redis) Set(ctx context.Context, key, val string) (err error) {
 	fmt.Printf("SET: %s = %s\n", key, val)
-	if err = r.rdb.Set(ctx, key, val, r.timeout).Err(); err != nil {
+	if err = r.rdb.Set(ctx, key, val, r.Timeout).Err(); err != nil {
 		return fmt.Errorf("unable to set key %s in redis repository: %w", key, err)
 	}
 

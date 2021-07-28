@@ -10,34 +10,24 @@ type url struct {
 	exp int64
 }
 
-var repo map[string]url
-
-func init() {
-	repo = make(map[string]url)
-}
-
 // Map is a in-memory keystore which implements the Repository interface which is used for testing
 type Map struct {
-	timeout time.Duration
+	Timeout time.Duration
+	repo map[string]url
 }
 
 // NewMap will create a new repository
-func NewMap() Repository {
-	return &Map{}
-}
-
-// SetTimeout will set the timeout for keys
-func (m *Map) SetTimeout(d time.Duration) {
-	m.timeout = d
+func NewMap(timeout time.Duration) Repository {
+	return &Map{Timeout: timeout, repo: make(map[string]url)}
 }
 
 // Get a value out of a map
 func (m *Map) Get(ctx context.Context, key string) (string, error) {
-	if val, ok := repo[key]; ok {
+	if val, ok := m.repo[key]; ok {
 		if time.Now().Unix() < val.exp {
 			return val.str, nil
 		} else {
-			delete(repo, key)
+			delete(m.repo, key)
 		}
 	}
 
@@ -46,11 +36,10 @@ func (m *Map) Get(ctx context.Context, key string) (string, error) {
 
 // Set a value within the map
 func (m *Map) Set(ctx context.Context, key, val string) error {
-	repo[key] = url{str: val, exp: time.Now().Add(m.timeout).Unix()}
+	m.repo[key] = url{str: val, exp: time.Now().Add(m.Timeout).Unix()}
 	return nil
 }
 
-// Close dummy, GC will clean this up
 func (m Map) Close() error {
 	return nil
 }
