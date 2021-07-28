@@ -3,11 +3,12 @@ package server_test
 import (
 	"bytes"
 	"context"
-	"encoding/json"
 	"net/http"
+	"net/url"
 	"net/http/httptest"
 	"time"
 	"testing"
+	"fmt"
 
 	"github.com/joshturge/shortener/pkg/repo"
 	"github.com/joshturge/shortener/pkg/server"
@@ -29,19 +30,15 @@ func init() {
 }
 
 func TestShorten(t *testing.T) {
-	for hash, data := range hashTest {
+	for hash, rurl := range hashTest {
 		buf := bytes.Buffer{}
-		if err := json.NewEncoder(&buf).
-			Encode(struct {
-				Url string `json:"url"`
-			}{data}); err != nil {
-			t.Errorf("unable to encode test user data: %w", err)
+		if _, err := buf.WriteString(fmt.Sprintf("url=%s", url.PathEscape(rurl))); err != nil {
+			t.Error(err.Error())
 			t.FailNow()
 		}
-
+			
 		req := httptest.NewRequest("POST", "http://localhost:8080/shorten", &buf)
-		req.Header.Add("Content-Type", "application/json")
-		req.Header.Add("User-Agent", "some-browser")
+		req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 
 		w := httptest.NewRecorder()
 		handler := server.Shorten(rep)
@@ -53,6 +50,7 @@ func TestShorten(t *testing.T) {
 			t.FailNow()
 		}
 
+		/*
 		var rHash struct {
 			Hash string `json:"hash"`
 		}
@@ -61,9 +59,11 @@ func TestShorten(t *testing.T) {
 			t.Errorf("failed to encode test response data into json: %w", err)
 			t.FailNow()
 		}
+		*/
 
-		if rHash.Hash != hash {
-			t.Errorf("hash does not match wanted: %s got: %s", hash, rHash.Hash)
+		if bytes.Compare(w.Body.Bytes(), []byte(hash)) != 0 {
+			t.Errorf("response body does not match expected hash: %s got %s",
+				hash, string(w.Body.Bytes()))
 		}
 	}
 }

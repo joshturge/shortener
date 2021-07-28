@@ -10,35 +10,41 @@
 	<link rel='icon' href='favicon.ico' type='image/x-icon'/ >
 </head>
 <body>
-	<h1>URL to shorten</h1>
-	<input id="url" type="text">
-	<button onclick="submit()">Shorten</button>
+	<form id="shortener" action="/shorten" method="POST">
+		<label for="url">URL to shorten</h1>
+		<input type="text" id="url" name="url">
+		<input type="button" onclick="submitUrl()" value="Shorten">
+	</form>
 
 	<p id="shortened-url"></p>
 
 	<script>
-		const submit = () => {
+		const submitUrl = () => {
 			let url = document.getElementById("url").value;
 			let exp = /(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})/gi;
-        	let regex = new RegExp(exp); 
+      let regex = new RegExp(exp); 
 
 			if (!url.match(regex)) {
 				alert("Invalid URL");
 				return;
 			}
 
+			let formElement = document.getElementById("shortener");
+			let pElement = document.getElementById("shortened-url");
+
+			const data = new URLSearchParams(new FormData(formElement));
+
 			fetch("/shorten", {
-				headers: {
-					"Content-Type": "application/json"
-				},
 				method: "POST",
-				body: JSON.stringify({url: url})
-			}).then(res => res.json())
-				.then(data => {
-					let shortUrl = `${location.protocol}//${location.host}/${data.hash}`
-					document.getElementById("shortened-url").innerHTML = `<a href="${shortUrl}">${shortUrl}</a>`;
-				})
-        }
-    </script> 
+				body: data,
+			}).then(
+				res => {
+					res.text().then(
+						text => pElement.innerHTML = `${window.location.href}${text}`
+					)	
+				}
+			).catch(err => alert(`Could not send request: ${err}`));
+		}
+  </script> 
 </body> 
 </html> 

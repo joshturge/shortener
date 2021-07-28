@@ -2,15 +2,15 @@ package server
 
 import (
 	"encoding/hex"
-	"encoding/json"
 	"fmt"
 	"hash/adler32"
 	"net/http"
 	"net/url"
 
-	"github.com/joshturge/shortener/pkg/model"
 	"github.com/joshturge/shortener/pkg/repo"
 )
+
+const uriKeyName = "url"
 
 func isUrl(str string) bool {
 	u, err := url.Parse(str)
@@ -21,37 +21,20 @@ func isUrl(str string) bool {
 func Shorten(rep repo.Repository) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
-		// start checking the request
-		if r.Method != http.MethodPost {
+		if r.Method != http.MethodPost  {
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
 
-		if r.Header.Get("Content-Type") != "application/json" {
+		url := r.PostFormValue(uriKeyName)
+
+		if !isUrl(url) {
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
-
-		var user model.Url
-		if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			return
-		}
-
-		if err := r.Body.Close(); err != nil {
-			fmt.Printf("ERROR: unable to close body of request from client: %s", err.Error())
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-
-		if !isUrl(user.URL) {
-			w.WriteHeader(http.StatusBadRequest)
-			return
-		}
-		// end checking
 
 		// create the url hash
-		chksm := adler32.Checksum([]byte(user.URL))
+		chksm := adler32.Checksum([]byte(url))
 		hash := hex.EncodeToString([]byte{
 			byte(chksm >> 24),
 			byte(chksm >> 16),
@@ -59,20 +42,19 @@ func Shorten(rep repo.Repository) http.HandlerFunc {
 			byte(chksm),
 		})
 
-		if err := rep.Set(r.Context(), hash, user.URL); err != nil {
+		var err error
+
+		if err = rep.Set(r.Context(), hash, url); err != nil {
 			fmt.Printf("ERROR: %s\n", err.Error())
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 
-		w.Header().Add("Content-Type", "application/json")
+		w.Header().Add("Content-Type", "text/plain")
 
-		rHash := model.Hash{Hash: hash}
-		// respond with the hash of the url
-		if err := json.NewEncoder(w).Encode(&rHash); err != nil {
-			fmt.Printf("ERROR: unable to write to response: %s", err.Error())
-			w.WriteHeader(http.StatusInternalServerError)
-			return
+		var n int
+		if n, err = w.Write([]byte(hash)); n != len(hash) || err != nil {
+			fmt.Printf("ERROR: %s: wrote %d/%d bytes\n", err.Error(), n, len(url))
 		}
 	}
 }
